@@ -6,15 +6,16 @@ import {
   TextInput,
   Button,
   StyleSheet,
+  Alert,
 } from "react-native";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Picker } from "@react-native-picker/picker";
 import { MUSIC_GENRES } from "../utils/constants";
+import { insertPoll, getPollsByEmail } from "../api/MusicPoll";
 
 const Poll = () => {
-  const [error, setError] = useState("");
-  const [selectedLanguage, setSelectedLanguage] = useState();
+  const [error, setError] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -22,20 +23,32 @@ const Poll = () => {
       email: "",
     },
     validationSchema: Yup.object({
-      musicGenre: Yup.string().required("Debe ingresar estilo musical"),
+      musicGenre: Yup.string().required("Debe ingresar estilo musical."),
       email: Yup.string()
-        .email("El correo ingresado no es válido")
-        .required("Debe ingresar un email"),
+        .email("El correo ingresado no es válido.")
+        .required("Debe ingresar un email."),
     }),
     validateOnChange: false,
-    onSubmit: (formValues) => {
-      setError("");
-      // const { username, password } = formValues;
-      // if (username !== user.username || password !== user.password) {
-      //   setError("Usuario o contraseña incorrectos");
-      // } else {
-      //   login(userDetails);
-      // }
+    onSubmit: async (formValues) => {
+      setError(false);
+      try {
+        let res = await getPollsByEmail(formValues.email);
+        if (res.length > 0) {
+          setError("Ya has participado en esta encuesta.");
+          return;
+        }
+
+        res = await insertPoll(formValues);
+        if (res === "Encuesta guardada.") {
+          Alert.alert("Encuesta guardada", "Gracias por participar");
+          formik.setFieldValue("musicGenre", "");
+          formik.setFieldValue("email", "");
+        } else {
+          setError("Error al enviar encuesta.");
+        }
+      } catch (error) {
+        setError("Error al enviar encuesta.");
+      }
     },
   });
 
@@ -70,9 +83,13 @@ const Poll = () => {
       <View style={styles.btnContainer}>
         <Button title="Ingresar" onPress={formik.handleSubmit} />
       </View>
-      <Text style={styles.error}>{formik.errors.musicGenre}</Text>
-      <Text style={styles.error}>{formik.errors.email}</Text>
-      <Text style={styles.error}>{error}</Text>
+      {formik.errors.musicGenre && (
+        <Text style={styles.error}>{formik.errors.musicGenre}</Text>
+      )}
+      {formik.errors.email && (
+        <Text style={styles.error}>{formik.errors.email}</Text>
+      )}
+      {error && <Text style={styles.error}>{error}</Text>}
     </View>
   );
 };

@@ -1,12 +1,25 @@
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { useState, useCallback } from "react";
+import { View, Text, StyleSheet, ScrollView, Button } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import Chart from "../components/Chart";
-import { RESULTS } from "../utils/constants";
+import { getResults } from "../api/MusicPoll";
 
 const ResultsScreen = () => {
+  const [results, setResults] = useState([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      (async () => {
+        const res = await getResults();
+        setResults(res);
+      })();
+    }, [])
+  );
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Resultados</Text>
-      <Chart results={RESULTS} />
+      <Chart results={results} />
     </ScrollView>
   );
 };

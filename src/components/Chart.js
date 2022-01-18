@@ -13,19 +13,23 @@ const Chart = ({ results }) => {
 
   return (
     <View style={styles.content}>
-      {results.map((item, index) => (
-        <View key={index} style={styles.block}>
-          <View style={styles.blockTitle}>
-            <Text style={styles.statName}>{item.genre}</Text>
-          </View>
-          <View style={styles.blockInfo}>
-            <Text style={styles.number}>{item.votes}</Text>
-            <View style={styles.bgBar}>
-              <View style={[styles.bar, barStyles(item.votes)]}></View>
+      {results ? (
+        results.map((item, index) => (
+          <View key={index} style={styles.block}>
+            <View style={styles.blockTitle}>
+              <Text style={styles.statName}>{item.genre}</Text>
+            </View>
+            <View style={styles.blockInfo}>
+              <Text style={styles.number}>{item.votes}</Text>
+              <View style={styles.bgBar}>
+                <View style={[styles.bar, barStyles(item.votes)]}></View>
+              </View>
             </View>
           </View>
-        </View>
-      ))}
+        ))
+      ) : (
+        <Text>Nadie ha llenado la encuesta</Text>
+      )}
     </View>
   );
 };
